@@ -35,31 +35,31 @@ public class SurveyManager {
                 handle_AnswerGetQuestion_Status(user, update);
                 break;
             case User.UserStatus.CS_ANSWER_GET_OPTIONS:
-                handleAnswerGetOptionsState(user, update);
+                handle_AnswerGetOptions_Status(user, update);
                 break;
             case User.UserStatus.CS_mainMenu:
-                handleMenuState(user, update);
+                handle_Menu_Status(user, update);
                 break;
             case User.UserStatus.CS_SendingTimeDistribution:
-                handle_SendingTimeDistributionState(user,update);
+                handle_SendingTimeDistribution_Status(user,update);
                 break;
             case User.UserStatus.CS_Select_question:
-                handleSelectQuestionState(user,update);
+                handle_SelectQuestion_Status(user,update);
                 break;
             case User.UserStatus.CS_Edit_question_menu:
-                handle_Edit_question_menuState(user,update);
+                handle_EditQuestionMenu_Statuse(user,update);
                 break;
             case User.UserStatus.CS_EditingQuestionItself:
-                handle_editingQuestionItselfState(user,update);
+                handle_editingQuestionItself_Status(user,update);
                 break;
             case User.UserStatus.CS_Editing_answers:
                 handle_editingAnswers_Status(user,update);
                 break;
             case CS_surveySettings:
-                handleSurveySettingsState(user,update);
+                handle_SurveySettings_Status(user,update);
                 break;
             case CS_SendingDurationOfActivity:
-                handle_SendingDurationOfActivityState(user,update);
+                handle_SendingDurationOfActivity_Status(user,update);
                 break;
             case CS_MySurveys:
                 handle_MySurveys_Status(user,update);
@@ -384,7 +384,7 @@ public class SurveyManager {
         }
     }
 
-    private void handleAnswerGetOptionsState(User user, Update update) throws TelegramApiException {
+    private void handle_AnswerGetOptions_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() &&  update.getMessage().hasText()) {
 
             int numAnswer = user.getLastSurvey().getSurveyQuestions().size();
@@ -413,7 +413,7 @@ public class SurveyManager {
 
     }
 
-    private void handleMenuState(User user, Update update) throws TelegramApiException {
+    private void handle_Menu_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
 
             switch (user.getAnswer()) {
@@ -421,10 +421,16 @@ public class SurveyManager {
                     if (!user.getLastSurvey().getSurveyQuestions().isEmpty()) {
                         user.setStatus(User.UserStatus.FREE);
                         user.getLastSurvey().setPublished(true);
-                        String text = "הסקר נוסף לתור ההפצה";
-                        messageManager.sendMessageToUser(user, update, text, null, false);
-
+                        String text =   "📊 *שם הסקר :* "+ user.getLastSurvey().getName() + "." + "\n" + "🔗  *ID Survey :* " + user.getLastSurvey().getId() + "." + "\n\n";
                         this.voteManager.addSurveyToTheSurveyQueue(user.getLastSurvey());
+                        text = text + "✅ הסקר נוסף לתור ההפצה בקהילה בהצלחה.";
+                        messageManager.sendMessageToUser(user, update, text, null, false);
+                        text = """
+                    🔑 לרשימת הפקודות המהירות שלח: /help
+                    """;
+                        ReplyKeyboardMarkup replyKeyboardMarkup = BotManager.getReplyKeyboardMarkupByStatus(user);
+                        messageManager.sendMessageToUser(user,text,replyKeyboardMarkup);
+
                     }else {
                         String text = """
                                 ⚠️ לא ניתן לפרסם את הסקר!
@@ -488,7 +494,7 @@ public class SurveyManager {
         }
     }
 
-    private void handleSurveySettingsState(User user,Update update) throws TelegramApiException {
+    private void handle_SurveySettings_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()){
             switch (user.getAnswer()) {
                 case "Edit-distribution-time" -> {
@@ -570,7 +576,7 @@ public class SurveyManager {
     }
 
 
-    private void handleSelectQuestionState(User user,Update update) throws TelegramApiException {
+    private void handle_SelectQuestion_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             if (user.getAnswer().startsWith("Select question:")) {
                 String[] details = user.getAnswer().split(":");
@@ -589,7 +595,7 @@ public class SurveyManager {
         }
     }
 
-    private void handle_Edit_question_menuState(User user,Update update) throws TelegramApiException {
+    private void handle_EditQuestionMenu_Statuse(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             switch (user.getAnswer()) {
                 case "delete", "Back menu" -> {
@@ -670,7 +676,7 @@ public class SurveyManager {
     }
 
 
-    private void handle_editingQuestionItselfState(User user, Update update) throws TelegramApiException {
+    private void handle_editingQuestionItself_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() && update.getMessage().hasText()){
             for (SurveyQuestion question : user.getLastSurvey().getSurveyQuestions()){
                 if (question.getQuestionText().equals(user.getAnswer())){
@@ -722,7 +728,7 @@ public class SurveyManager {
 
     }
 
-    private void handle_SendingDurationOfActivityState(User user, Update update) throws TelegramApiException {
+    private void handle_SendingDurationOfActivity_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             if (user.getAnswer().equals("back-survey-settings")) {
                 user.setStatus(User.UserStatus.CS_surveySettings);
@@ -745,7 +751,7 @@ public class SurveyManager {
         }
     }
 
-    private void handle_SendingTimeDistributionState(User user, Update update) throws TelegramApiException {
+    private void handle_SendingTimeDistribution_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             if (user.getAnswer().equals("back-survey-settings")) {
                 user.setStatus(User.UserStatus.CS_surveySettings);

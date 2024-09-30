@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class UserSearchManager {
 
@@ -34,6 +35,9 @@ public class UserSearchManager {
                 break;
             case US_UserInformation:
                 handle_UserInformation_Status(user,update);
+                break;
+            case US_IDSearch:
+                handle_IDSearch_Status(user,update);
                 break;
         }
     }
@@ -71,9 +75,46 @@ public class UserSearchManager {
 
                 InlineKeyboardMarkup inlineKeyboardMarkup = getInlineKeyboardMarkupByStatus(user);
                 this.messageManager.sendMessageToUser(user, update, text, inlineKeyboardMarkup, false);
+            }else if (user.getAnswer().equals("ID-search")){
+                user.setStatus(User.UserStatus.US_IDSearch);
+                String text = """
+                        *🆔 חיפוש לפי ID 🆔*
+                                                
+                        💠 כעת תוכל לשלוח לי את ID של משתמש הקהילה ולקבל עליו מידע.
+                                                
+                        ● לא ניתן לקבל מידע עבור משתמשים אנונימים.
+                        """;
+
+                InlineKeyboardMarkup inlineKeyboardMarkup = getInlineKeyboardMarkupByStatus(user);
+                this.messageManager.sendMessageToUser(user, update, text, inlineKeyboardMarkup, false);
             }
         }
     }
+
+    private void handle_IDSearch_Status(User user, Update update) throws TelegramApiException{
+        if (update.hasCallbackQuery()){
+            if (user.getAnswer().equals("back-main")){
+                user.setStatus(User.UserStatus.US_SearchSelection);
+                EditMessageText EMessage = (EditMessageText) getSearchSelectionUSMessage(user,update,false);
+                messageManager.sendMessage(EMessage);
+            }
+        }else if (update.hasMessage() && update.getMessage().hasText()){
+            Map<String,User> userMap = dataLoader.getUsersAsMap();
+            String searchID = user.getAnswer();
+            if (userMap.containsKey(searchID) && !userMap.get(searchID).isAnonymousAccount()){
+                User user1 = userMap.get(searchID);
+                String text = getUserInformation(user1);
+                messageManager.sendMessageToUser(user,text,null);
+            }else {
+                String text = "*🚫 לא נמצא מידע עבור :*" + "\n🆔 מזהה המשתמש : [" + user.getAnswer() + "](tg://user?id=" + user.getAnswer() + ")";
+                messageManager.sendMessageToUser(user,text,null);
+            }
+        }
+
+    }
+
+
+
     private void handle_UserList_Status(User user, Update update) throws TelegramApiException{
         if (update.hasCallbackQuery()){
 
@@ -212,6 +253,9 @@ public class UserSearchManager {
                 return MessageManager.createsFloatingButtons(rows);
             case US_UserInformation:
                 MessageManager.addFButtonToNewRow(rows, "⬅️ חזור", "back-List");
+                return MessageManager.createsFloatingButtons(rows);
+            case US_IDSearch:
+                MessageManager.addFButtonToNewRow(rows, "⬅️ חזור", "back-main");
                 return MessageManager.createsFloatingButtons(rows);
             default:
                 return null;

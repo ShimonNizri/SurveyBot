@@ -34,7 +34,7 @@ public class User {
         CS_SendingDurationOfActivity,CS_MySurveys
         ,voting,FREE,
         EP_EditingProfile,EP_ProfileSettings,EP_Set_alerts, EP_Set_account,EP_Set_Defaults,EP_DefaultTimeDistribution,EP_DefaultDurationOfActivity,
-        US_searchType,US_SearchSelection,US_UserList,US_UserInformation
+        US_searchType,US_SearchSelection,US_UserList,US_IDSearch,US_UserInformation
     }
 
     public User(org.telegram.telegrambots.meta.api.objects.User from) {

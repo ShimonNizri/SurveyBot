@@ -25,10 +25,10 @@ public class ProfileManager {
     public void getMessage(User user, Update update) throws TelegramApiException {
         switch (user.getStatus()) {
             case User.UserStatus.EP_EditingProfile:
-                handleEditingProfileStatus(user,update);
+                handle_EditingProfile_Status(user,update);
                 break;
             case User.UserStatus.EP_ProfileSettings:
-                handleProfileSettingsStatus(user,update);
+                handle_ProfileSettings_Status(user,update);
                 break;
             case User.UserStatus.EP_Set_alerts:
                 handle_Set_alerts_Status(user,update);
@@ -163,7 +163,7 @@ public class ProfileManager {
         }
     }
 
-    private void handleEditingProfileStatus(User user, Update update) throws TelegramApiException {
+    private void handle_EditingProfile_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() &&  update.getMessage().hasText()) {
             user.setStatus(User.UserStatus.EP_ProfileSettings);
             SendMessage message = (SendMessage) getProfileSettingsEPMessage(user,update,true);
@@ -173,7 +173,7 @@ public class ProfileManager {
         }
     }
 
-    private void handleProfileSettingsStatus(User user, Update update) throws TelegramApiException {
+    private void handle_ProfileSettings_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             switch (user.getAnswer()) {
                 case "Edit-Alerts" -> {
@@ -196,10 +196,14 @@ public class ProfileManager {
                     text = text + "\n\n" + """           
                             👣 *חשבון אנונימי:*
                                ● לא ניתן ליצור סקר חדש.
+                               ● לא ניתן לחפש משתמשים בקהילה.
+                               ● אי אפשר למצוא אותך בחיפוש משתמשים.
                                ● ניתן להצביע לסקרים בצורה אנונימית.
                                                     
                             👁 *חשבון גלוי:*
                                ● ניתן ליצור סקרים חדשים.
+                               ● ניתן לחפש משתמשים בקהילה.
+                               ● אפשר למצוא אותך בחיפוש משתמשים.
                                ● ניתן להצביע לסקרים, והמשתמש הגלוי יוצג כמי שענה לסקר.
                                                     
                             ⚠️ שינוי סוג החשבון אפשרי אחת ל-24 שעות מהשינוי הקודם.
@@ -223,10 +227,14 @@ public class ProfileManager {
                 text = text + "\n\n" + """           
                             👣 *חשבון אנונימי:*
                                ● לא ניתן ליצור סקר חדש.
+                               ● לא ניתן לחפש משתמשים בקהילה.
+                               ● אי אפשר למצוא אותך בחיפוש משתמשים.
                                ● ניתן להצביע לסקרים בצורה אנונימית.
                                                     
                             👁 *חשבון גלוי:*
                                ● ניתן ליצור סקרים חדשים.
+                               ● ניתן לחפש משתמשים בקהילה.
+                               ● אפשר למצוא אותך בחיפוש משתמשים.
                                ● ניתן להצביע לסקרים, והמשתמש הגלוי יוצג כמי שענה לסקר.
                                                     
                             ⚠️ שינוי סוג החשבון אפשרי אחת ל-24 שעות מהשינוי הקודם.
@@ -261,10 +269,14 @@ public class ProfileManager {
                     text = text + "\n\n" + """  
                             👣 *חשבון אנונימי:*
                                ● לא ניתן ליצור סקר חדש.
+                               ● לא ניתן לחפש משתמשים בקהילה.
+                               ● אי אפשר למצוא אותך בחיפוש משתמשים.
                                ● ניתן להצביע לסקרים בצורה אנונימית.
                                                     
                             👁 *חשבון גלוי:*
                                ● ניתן ליצור סקרים חדשים.
+                               ● ניתן לחפש משתמשים בקהילה.
+                               ● אפשר למצוא אותך בחיפוש משתמשים.
                                ● ניתן להצביע לסקרים, והמשתמש הגלוי יוצג כמי שענה לסקר.
                                                     
                             ⚠️ שינוי סוג החשבון אפשרי אחת ל-24 שעות מהשינוי הקודם.
