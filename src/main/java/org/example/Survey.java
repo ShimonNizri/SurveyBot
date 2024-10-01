@@ -1,31 +1,30 @@
 package org.example;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.*;
 
 public class Survey {
-    @JsonIgnore
-    private User surveyCreator;
-
-    private String name;
-
-    private ArrayList<SurveyQuestion> surveyQuestions;
-    private int id;
-
-    @JsonIgnore
-    private int lastEditedQuestion;
 
     private static int counterId = 1000;
 
-    @JsonIgnore
-    private double timeToAdd;
-    private double durationOfActivity;
+    private final User surveyCreator;
+
+    private final ArrayList<SurveyQuestion> surveyQuestions;
+
+    private final String name;
+
     private boolean anonymousSurvey;
     private boolean hasResults;
     private boolean published;
     private boolean distributed;
+
+    private double timeToAdd;
+    private double durationOfActivity;
+
+    private int lastEditedQuestion;
+    private final int id;
+
 
     public Survey(User userCreator ,String name){
         surveyQuestions = new ArrayList<>();
@@ -34,13 +33,6 @@ public class Survey {
         this.hasResults = false;
         this.surveyCreator = userCreator;
         applyDefaultSettings();
-    }
-
-    public void applyDefaultSettings(){
-        setTimeToAdd(surveyCreator.getDefaultDistributionTime());
-        setDurationOfActivity(surveyCreator.getDefaultDurationOfActivity());
-        setAnonymousSurvey(surveyCreator.isDefaultAnonymousSurvey());
-
     }
 
     public boolean isPublished() {
@@ -95,12 +87,37 @@ public class Survey {
         this.timeToAdd = newTime;
     }
 
-    @JsonIgnore
+    public int getLastEditedQuestion(){
+        return lastEditedQuestion;
+    }
+
+    public void setLastEditedQuestion(int index){
+        this.lastEditedQuestion = index;
+    }
+
+    public User getSurveyCreator(){
+        return surveyCreator;
+    }
+
+    public List<SurveyQuestion> getSurveyQuestions(){
+        return surveyQuestions;
+    }
+
+    public int getId(){
+        return id;
+    }
+
     public List<SendMessage> getQuestionsAsMessage(){
         return surveyQuestions.stream().map(SurveyQuestion::getMessage).toList();
     }
 
-    @JsonIgnore
+    public void applyDefaultSettings(){
+        setTimeToAdd(surveyCreator.getDefaultDistributionTime());
+        setDurationOfActivity(surveyCreator.getDefaultDurationOfActivity());
+        setAnonymousSurvey(surveyCreator.isDefaultAnonymousSurvey());
+
+    }
+
     public SendMessage getResultsAsMessage(){
         SendMessage message = new SendMessage();
         message.setChatId(surveyCreator.getChatId());
@@ -110,17 +127,6 @@ public class Survey {
         }
         message.setParseMode("Markdown");
         return message;
-    }
-
-    public List<SurveyQuestion> getSurveyQuestions(){
-        return surveyQuestions;
-    }
-    public int getId(){
-        return id;
-    }
-
-    public String toString(){
-        return surveyQuestions.toString();
     }
 
     public List<User> getUsersThatParticipateInAll() {
@@ -152,36 +158,26 @@ public class Survey {
 
     public List<User> getAllVoting(){
         Set<User> commonSet = new HashSet<>();
-        for (int i = 0; i < surveyQuestions.size(); i++) {
-            commonSet.addAll(surveyQuestions.get(i).getUsers());
+        for (SurveyQuestion surveyQuestion : surveyQuestions) {
+            commonSet.addAll(surveyQuestion.getUsers());
         }
         return new ArrayList<>(commonSet);
     }
 
-    public int getLastEditedQuestion(){
-        return lastEditedQuestion;
-    }
-    public void setLastEditedQuestion(int index){
-        this.lastEditedQuestion = index;
-    }
-    public User getSurveyCreator(){
-        return surveyCreator;
-    }
-
     public String voterInformation(User user){
-        String text =  "*🗂 נתונים על המצביע :*" + "\n\n";
-        text = text + "*🗣 שם :* " + user.getDetails().getFirstName() + (user.getDetails().getLastName() != null ? user.getDetails().getLastName():"");
-        text = text + "\n" + "🔗 *ID* : [" + user.getChatId() + "](tg://user?id=" + user.getChatId() + ")";
+        StringBuilder text = new StringBuilder("""
+                *🗂 נתונים על המצביע :*
+
+                """);
+        text.append("*🗣 שם :* ").append(user.getFullName());
+        text.append("\n").append("🔗 *ID* : [").append(user.getChatId()).append("](tg://user?id=").append(user.getChatId()).append(")");
 
         for (SurveyQuestion surveyQuestion : surveyQuestions){
-            text = text +"\n\n" + surveyQuestion.voterInformation(user);
+            text.append("\n\n").append(surveyQuestion.voterInformation(user));
         }
-
-        return text;
+        return text.toString();
     }
 
-
-    @Override
     public boolean equals(Object object) {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
@@ -189,8 +185,11 @@ public class Survey {
         return this.id == survey.id;
     }
 
-    @Override
     public int hashCode() {
-        return Objects.hash(surveyCreator, name, surveyQuestions, id, lastEditedQuestion, timeToAdd, durationOfActivity, anonymousSurvey, hasResults, published, distributed);
+        return Objects.hash(id);
+    }
+
+    public String toString(){
+        return surveyQuestions.toString();
     }
 }

@@ -21,33 +21,31 @@ public class ProfileManager {
         this.messageManager = messageManager;
     }
 
-
     public void getMessage(User user, Update update) throws TelegramApiException {
         switch (user.getStatus()) {
-            case User.UserStatus.EP_EditingProfile:
+            case EP_EditingProfile:
                 handle_EditingProfile_Status(user,update);
                 break;
-            case User.UserStatus.EP_ProfileSettings:
+            case EP_ProfileSettings:
                 handle_ProfileSettings_Status(user,update);
                 break;
-            case User.UserStatus.EP_Set_alerts:
+            case EP_Set_alerts:
                 handle_Set_alerts_Status(user,update);
                 break;
-            case User.UserStatus.EP_Set_account:
+            case EP_Set_account:
                 handle_Set_account_Status(user,update);
                 break;
-            case User.UserStatus.EP_Set_Defaults:
+            case EP_Set_Defaults:
                 handle_Set_Defaults_Status(user,update);
                 break;
-            case User.UserStatus.EP_DefaultTimeDistribution:
+            case EP_DefaultTimeDistribution:
                 handle_DefaultTimeDistribution_Status(user,update);
                 break;
-            case User.UserStatus.EP_DefaultDurationOfActivity:
+            case EP_DefaultDurationOfActivity:
                 handle_DefaultDurationOfActivity_Status(user,update);
                 break;
         }
     }
-
 
     private void handle_DefaultDurationOfActivity_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()){
@@ -68,8 +66,6 @@ public class ProfileManager {
             }
         }
     }
-
-
 
     private void handle_DefaultTimeDistribution_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()){
@@ -128,7 +124,7 @@ public class ProfileManager {
                 case "New-Status-Survey" -> {
                     user.setDefaultAnonymousSurvey(!user.isDefaultAnonymousSurvey());
                     String text = "✅ ברירת מחדל עבור הצבעה בסקרים שונתה ל: " + (user.isDefaultAnonymousSurvey() ? "אנונימית." : "גלויה.");
-                    this.messageManager.sendAlert(user, update, text, false);
+                    this.messageManager.sendAlert(update, text, false);
                     text = """
                             *⚙ ניהול ברירות מחדל לסקר:*
                                                     
@@ -263,7 +259,7 @@ public class ProfileManager {
                         text = "⚠ אין באפשרות לשנות את סטטוס החשבון מכיוון שעדין לא עברו 24 שעות מהשינוי האחרון !";
                     }
 
-                    messageManager.sendAlert(user, update, text, true);
+                    messageManager.sendAlert(update, text, true);
 
                     text = "*🔒 הגדרות פרטיות:*" + "\n\nכעת החשבון שלך מוגדר כ: " + (user.isAnonymousAccount() ? "*אנונימי.*" : "*גלוי.*");
                     text = text + "\n\n" + """  
@@ -299,7 +295,7 @@ public class ProfileManager {
                         text = "☑ כדי לשנות את הסטוס חשבון אתה צריך לחכות עוד -> " + hours + ":" + minutes;
 
                     }
-                    messageManager.sendAlert(user, update, text, false);
+                    messageManager.sendAlert(update, text, false);
 
                 }
                 case "Back-Menu-ProfileSettings" -> {
@@ -309,8 +305,6 @@ public class ProfileManager {
                 }
             }
         }
-
-
     }
 
     private void handle_Set_alerts_Status(User user, Update update) throws TelegramApiException {
@@ -325,7 +319,7 @@ public class ProfileManager {
                         user.setNewMemberAlert(!user.isNewMemberAlert());
                         text = user.isNewMemberAlert() ? "התראה על משתמש חדש הופעלה 🔊" : "התראה על משתמש חדש כובתה 🔇";
                     }
-                    messageManager.sendAlert(user, update, text, false);
+                    messageManager.sendAlert(update, text, false);
 
                     text = """
                             📢 *בחר את סוג ההתראה שברצונך לערוך:*
@@ -493,5 +487,4 @@ public class ProfileManager {
                 return null;
         }
     }
-
 }

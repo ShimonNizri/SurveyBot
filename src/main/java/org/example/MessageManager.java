@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MessageManager {
-    private Bot bot;
+    private final Bot bot;
 
     public MessageManager(Bot bot){
         this.bot = bot;
@@ -58,8 +58,6 @@ public class MessageManager {
         keyboardMarkup.setKeyboard(keyboard);
         return keyboardMarkup;
     }
-
-
     // פונקציה ליצירת כפתור מקלדת ולהוספתו לשורה חדשה
     public static void addKButtonToNewRow(List<List<String>> rows, String text) {
         addKButtonsToNewRow(rows, List.of(text));
@@ -69,8 +67,6 @@ public class MessageManager {
         List<String> row = new LinkedList<>(rowButtons);
         rows.add(row);
     }
-
-
     // פונקציה ליצירת כפתור צף ולהוספתו לשורה חדשה
     public static void addFButtonToNewRow(List<List<String[]>> rows, String text, String callbackData) {
         addFButtonsToNewRow(rows, List.<String[]>of(new String[]{text, callbackData}));
@@ -101,6 +97,7 @@ public class MessageManager {
             return update.getMessage();
         }
     }
+
     public Message sendMessageToUser(User user , String text, ReplyKeyboardMarkup keyboardMarkup) throws TelegramApiException {
         String chatId = user.getChatId();
         SendMessage message = new SendMessage(chatId, text);
@@ -116,13 +113,11 @@ public class MessageManager {
         return bot.execute(message);
     }
 
-
     public void sendMessage(BotApiMethod<?> message) throws TelegramApiException{
         bot.execute(message);
     }
 
-
-    public void sendAlert(User user, Update update, String text, boolean showAlert) throws TelegramApiException {
+    public void sendAlert(Update update, String text, boolean showAlert) throws TelegramApiException {
         AnswerCallbackQuery message = new AnswerCallbackQuery();
         message.setCallbackQueryId(update.getCallbackQuery().getId());
         message.setShowAlert(showAlert);
@@ -157,6 +152,4 @@ public class MessageManager {
                 .replace(".", "\\.")
                 .replace("!", "\\!");
     }
-
-
 }

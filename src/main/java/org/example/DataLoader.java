@@ -1,7 +1,6 @@
 package org.example;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,9 +9,9 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class DataLoader {
-    private File usersFile;
-    private File informationFile;
-    private Map<String,User> users;
+    private final File usersFile;
+    private final File informationFile;
+    private final Map<String,User> users;
     private int sumOfSurvey;
 
     public DataLoader() throws IOException{
@@ -24,9 +23,21 @@ public class DataLoader {
         initializeData();
     }
 
+    public int getSumOfSurvey(){
+        return this.sumOfSurvey;
+    }
+
+    public Map<String,User> getUsersAsMap(){
+        return users;
+    }
+
+    public List<User> getUsersAsList(){
+        return users.values().stream().toList();
+    }
+
     public void addNewUser(User newUser) throws IOException{
         FileWriter fw = new FileWriter(usersFile, true);
-        fw.write(newUser.getChatId() +":"+ newUser.getDateOfJoining()+ System.lineSeparator());
+        fw.write(newUser.getChatId() +","+ newUser.getDateOfJoining()+ System.lineSeparator());
         fw.close();
 
         users.put(newUser.getChatId(), newUser);
@@ -37,7 +48,7 @@ public class DataLoader {
     public void initializeData() throws IOException {
         Scanner s = new Scanner(usersFile);
         while (s.hasNextLine()){
-            String[] details = s.nextLine().split(":");
+            String[] details = s.nextLine().split(",");
             User u = new User(details[0],details[1]);
             users.put(u.getChatId(),u);
         }
@@ -50,6 +61,7 @@ public class DataLoader {
         }
         updateInformationFile();
     }
+
     public void updateInformationFile() throws IOException{
         FileWriter fw = new FileWriter(informationFile, false);
         fw.write(users.size() + ":" + sumOfSurvey);
@@ -59,16 +71,5 @@ public class DataLoader {
     public void addOneToSumOfSurvey() throws IOException{
         this.sumOfSurvey++;
         updateInformationFile();
-    }
-    public int getSumOfSurvey(){
-        return this.sumOfSurvey;
-    }
-
-    public Map<String,User> getUsersAsMap(){
-        return users;
-    }
-
-    public List<User> getUsersAsList(){
-        return users.values().stream().toList();
     }
 }

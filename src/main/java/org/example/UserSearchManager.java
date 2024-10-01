@@ -16,7 +16,6 @@ public class UserSearchManager {
     private final MessageManager messageManager;
     private final DataLoader dataLoader;
 
-
     public UserSearchManager(MessageManager messageManager, DataLoader dataLoader){
         this.messageManager = messageManager;
         this.dataLoader = dataLoader;
@@ -41,6 +40,7 @@ public class UserSearchManager {
                 break;
         }
     }
+
     private void handle_searchType_Status(User user, Update update) throws TelegramApiException{
         if (update.hasMessage() && update.getMessage().hasText()){
             if (!user.isAnonymousAccount()) {
@@ -50,6 +50,7 @@ public class UserSearchManager {
                 int messageID = messageManager.sendMessageToUser(user, "ㅤ", null).getMessageId();
                 messageManager.deleteMessage(user, messageID);
             }else {
+                user.setStatus(User.UserStatus.FREE);
                 String text = """
                             🛂* החשבון שלך מוגדר כאנונימי.*
                                                     
@@ -113,8 +114,6 @@ public class UserSearchManager {
 
     }
 
-
-
     private void handle_UserList_Status(User user, Update update) throws TelegramApiException{
         if (update.hasCallbackQuery()){
 
@@ -141,7 +140,7 @@ public class UserSearchManager {
 
             }else if (user.getAnswer().equals("Anonymous-account")) {
                 String text = "🔒 זהו משתמש אנונימי, פרטי המשתמש חסויים!";
-                messageManager.sendAlert(user,update,text,true);
+                messageManager.sendAlert(update,text,true);
             }else if (user.getAnswer().equals("back-main")){
                 user.setStatus(User.UserStatus.US_SearchSelection);
                 EditMessageText EMessage = (EditMessageText) getSearchSelectionUSMessage(user,update,false);
@@ -159,16 +158,6 @@ public class UserSearchManager {
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
 
     private BotApiMethod<?> getSearchSelectionUSMessage(User user, Update update, boolean newMessage) {
         String chatId = user.getChatId();
@@ -201,10 +190,9 @@ public class UserSearchManager {
         }
     }
 
-
-    private String getUserInformation(User user){
+    public static String getUserInformation(User user){
         String text = "*📑 מידע על המשתמש 📑*";
-        text = text + "\n\n*🗣 שם :* " + (user.getDetails() == null ?  "- אין  מידע -" : user.getDetails().getFirstName() + (user.getDetails().getLastName() == null ? "": user.getDetails().getLastName()));
+        text = text + "\n\n*🗣 שם :* " + (user.getDetails() == null ?  "- אין  מידע -" : user.getFullName());
         text = text + "\n*💬 שם משתמש :* "
                 + (user.getDetails() == null
                 ? "- אין מידע -"
@@ -214,13 +202,11 @@ public class UserSearchManager {
         text = text + "\n*🆔 מזהה משתמש :* [" + (user.getChatId() + "](tg://user?id=" + user.getChatId() + ")");
 
         text = text + "\n\n*🗓 הצטרף לקהילה בתאריך : *" + user.getDateOfJoining().subSequence(0,10);
-        text = text + "\n*📊 סקרים שנוצרו :* " + user.getSurveys().size();
+        text = text + "\n*📊 סקרים שנוצרו :* " + user.getSurveysHeCreated();
         text = text + "\n*🗳 השתתפות בסקרים :* " + user.getParticipationInSurveys();
 
         return text;
     }
-
-
 
     private InlineKeyboardMarkup getInlineKeyboardMarkupByStatus(User user){
         List<List<String[]>> rows = new ArrayList<>();
@@ -238,7 +224,7 @@ public class UserSearchManager {
                     if (users.get(i).isAnonymousAccount()) {
                         MessageManager.addFButtonToNewRow(rows, "- אנונימי -", "Anonymous-account");
                     } else {
-                        MessageManager.addFButtonToNewRow(rows, users.get(i).getDetails() == null ? users.get(i).getChatId() : users.get(i).getDetails().getFirstName() + (users.get(i).getDetails().getLastName() != null ? users.get(i).getDetails().getLastName() : ""), "user:" + users.get(i).getChatId());
+                        MessageManager.addFButtonToNewRow(rows, users.get(i).getDetails() == null ? users.get(i).getChatId() : user.getFullName(), "user:" + users.get(i).getChatId());
                     }
                 }
 

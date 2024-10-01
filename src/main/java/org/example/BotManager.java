@@ -9,13 +9,13 @@ import java.util.*;
 
 
 public class BotManager {
-    private DataLoader dataLoader;
-    private MessageManager messageManager;
-    private VoteManager voteManager;
-    private ProfileManager profileManager;
-    private SurveyManager surveyManager;
+    private final DataLoader dataLoader;
+    private final MessageManager messageManager;
+    private final VoteManager voteManager;
+    private final ProfileManager profileManager;
+    private final SurveyManager surveyManager;
     private final Map<String,User> users;
-    private UserSearchManager userSearchManager;
+    private final UserSearchManager userSearchManager;
     private final Bot bot;
 
     public BotManager(Bot bot) throws IOException{
@@ -55,58 +55,68 @@ public class BotManager {
                                 user.setAnswer("/"+payload);
                             }else if (payload.equals("active_survey")){
                                 user.setAnswer("/"+payload);
-                            }else if (payload.startsWith("survey-results")){
-                                String idSurvey = payload.split(":")[1];
+                            }else if (payload.startsWith("SurveyResults")){
+                                String idSurvey = payload.split("_")[1];
                                 user.setStatus(User.UserStatus.CS_ViewingSurvey);
                                 user.setAnswer("results:" +idSurvey);
                             }
                         }
                     }
 
-                    if (user.getAnswer().equals("/create_survey")) {
-                        user.setStatus(User.UserStatus.CS_CreateSurvey);
-                        this.surveyManager.getMessage(user, update);
-                    } else if (user.getAnswer().equals("/search_users")) {
-                        user.setStatus(User.UserStatus.US_searchType);
-                        this.userSearchManager.getMessage(user,update);
-                    } else if (user.getAnswer().equals("/active_survey")) {
-                        user.setStatus(User.UserStatus.voting);
-                        this.voteManager.printTheCurrentSurvey(user,update);
-                    } else if (user.getAnswer().equals("/my_survey")) {
-                        user.setStatus(User.UserStatus.CS_MySurveys);
-                        this.surveyManager.getMessage(user,update);
-                    } else if (user.getAnswer().equals("/help")) {
-                        printAListOfCommands(user);
-                    } else if (user.getAnswer().equals("/about")) {
-                        printAbout(user);
-                    } else if (user.getAnswer().equals("/my_profile")) {
-                        user.setStatus(User.UserStatus.EP_EditingProfile);
-                        this.profileManager.getMessage(user,update);
-                    } else {
-                        if (user.getStatus().toString().startsWith("CS_")) {
+                    switch (user.getAnswer()) {
+                        case "/create_survey" -> {
+                            user.setStatus(User.UserStatus.CS_CreateSurvey);
                             this.surveyManager.getMessage(user, update);
-                        }else if (user.getStatus().toString().startsWith("EP_")){
-                            this.profileManager.getMessage(user, update);
-                        }else if (user.getStatus().toString().startsWith("US_")){
+                        }
+                        case "/search_users" -> {
+                            user.setStatus(User.UserStatus.US_searchType);
                             this.userSearchManager.getMessage(user, update);
-                        }else if (user.getStatus().equals(User.UserStatus.FREE)){
-                            if (user.getAnswer().equals("📊 יצירת סקר 📊")){
-                                user.setStatus(User.UserStatus.CS_CreateSurvey);
-                                this.surveyManager.getMessage(user,update);
-                            }else if (user.getAnswer().equals("👤 ניהול פרופיל 👤")){
-                                user.setStatus(User.UserStatus.EP_EditingProfile);
-                                this.profileManager.getMessage(user,update);
-                            }else if (user.getAnswer().equals("🌐 מידע על הקהילה 🌐")){
-                                printAbout(user);
-                            }else if (user.getAnswer().equals("📤 סקר בהפצה 📤")){
-                                user.setStatus(User.UserStatus.voting);
-                                this.voteManager.printTheCurrentSurvey(user,update);
-                            }else if (user.getAnswer().equals("📁 הסקרים שלי 📁")){
-                                user.setStatus(User.UserStatus.CS_MySurveys);
-                                this.surveyManager.getMessage(user,update);
-                            }else if (user.getAnswer().equals("🔍 חיפוש משתמשים 🔍")){
-                                user.setStatus(User.UserStatus.US_searchType);
-                                this.userSearchManager.getMessage(user,update);
+                        }
+                        case "/active_survey" -> {
+                            user.setStatus(User.UserStatus.voting);
+                            this.voteManager.printTheCurrentSurvey(user, update);
+                        }
+                        case "/my_survey" -> {
+                            user.setStatus(User.UserStatus.CS_MySurveys);
+                            this.surveyManager.getMessage(user, update);
+                        }
+                        case "/help" -> printAListOfCommands(user);
+                        case "/about" -> printAbout(user);
+                        case "/my_profile" -> {
+                            user.setStatus(User.UserStatus.EP_EditingProfile);
+                            this.profileManager.getMessage(user, update);
+                        }
+                        default -> {
+                            if (user.getStatus().toString().startsWith("CS_")) {
+                                this.surveyManager.getMessage(user, update);
+                            } else if (user.getStatus().toString().startsWith("EP_")) {
+                                this.profileManager.getMessage(user, update);
+                            } else if (user.getStatus().toString().startsWith("US_")) {
+                                this.userSearchManager.getMessage(user, update);
+                            } else if (user.getStatus().equals(User.UserStatus.FREE)) {
+                                switch (user.getAnswer()) {
+                                    case "📊 יצירת סקר 📊" -> {
+                                        user.setStatus(User.UserStatus.CS_CreateSurvey);
+                                        this.surveyManager.getMessage(user, update);
+                                    }
+                                    case "👤 ניהול פרופיל 👤" -> {
+                                        user.setStatus(User.UserStatus.EP_EditingProfile);
+                                        this.profileManager.getMessage(user, update);
+                                    }
+                                    case "🌐 מידע על הקהילה 🌐" -> printAbout(user);
+                                    case "📤 סקר בהפצה 📤" -> {
+                                        user.setStatus(User.UserStatus.voting);
+                                        this.voteManager.printTheCurrentSurvey(user, update);
+                                    }
+                                    case "📁 הסקרים שלי 📁" -> {
+                                        user.setStatus(User.UserStatus.CS_MySurveys);
+                                        this.surveyManager.getMessage(user, update);
+                                    }
+                                    case "🔍 חיפוש משתמשים 🔍" -> {
+                                        user.setStatus(User.UserStatus.US_searchType);
+                                        this.userSearchManager.getMessage(user, update);
+                                    }
+                                }
                             }
                         }
                     }
@@ -138,8 +148,6 @@ public class BotManager {
         }
     }
 
-
-
     private void handle_FREE_Status(User user,Update update) throws TelegramApiException {
         if (update.hasMessage() &&  update.getMessage().hasText()) {
             String text = """
@@ -149,8 +157,6 @@ public class BotManager {
             messageManager.sendMessageToUser(user,text,replyKeyboardMarkup);
         }
     }
-
-
 
     public User loginMessage(Update update) throws TelegramApiException,IOException{
         User newUser = new User(update.getMessage().getFrom());
@@ -165,12 +171,17 @@ public class BotManager {
         }
         newUser = users.get(newUser.getChatId());
         newUser.setStatus(User.UserStatus.FREE);
-        String text = "\uD83D\uDD06 ברוך הבא "+ update.getMessage().getFrom().getFirstName() +" לקהילה שלנו !  \n" +
-                    "\n" +
-                    "\uD83C\uDF10 באמצעות בוט זה תוכל ליצור סקרים ולשתף סקרים לכל הקהילה שלנו ! \n" +
-                    "\n" +
-                    "\uD83D\uDCCC בכל פעם קיים רק סקר אחד בבוט שנשלח לחברי הקהילה.\n"
-                    ;
+        String text = "*ברוך הבא " + (newUser.getFullName()) +" לקהילת הסקרים שלנו! 🎉✨*\n\n" ;
+        text = text + """                                            
+                📌 בקהילה הזו תוכל :
+                                
+                📊 ליצור סקרים ולשתפם עם כל חברי הקהילה.
+                🗳️ ולהשתתף בסקרים אחרים.
+                                
+                בכל פעם יופץ רק סקר אחד בקהילה 🔄, לפי סדר יצירתם, כך שכולם יוכלו להשתתף בצורה מסודרת ✅.
+                                
+                אנחנו שמחים שהצטרפת 🙌 ומחכים לראות את הסקרים המעניינים שתיצור! 📋✏️
+                """;
 
         messageManager.sendMessageToUser(newUser,text,null);
         return newUser;
@@ -193,17 +204,17 @@ public class BotManager {
                 🔗 לקבל מידע על הקהילה שלח : /about
                 """;
 
-        this.messageManager.sendMessageToUser(user,text,null);
+        this.messageManager.sendMessageToUser(user,null,text,null,true);
 
     }
+
     public void printAbout(User user) throws TelegramApiException{
         String text = "\uD83D\uDCCB נתונים על הבוט :\n" +
                 "\n" +
                 "\uD83D\uDC65 בקהילה שלנו קיימים "+ users.size()+ " חברים.\n" +
                 "\uD83D\uDCCA עד כה נשלחו "+ dataLoader.getSumOfSurvey() +" סקרים בקהילה.";
-        messageManager.sendMessageToUser(user,text,null);
+        messageManager.sendMessageToUser(user,null,text,null,true);
     }
-
 
     public static ReplyKeyboardMarkup getReplyKeyboardMarkupByStatus(User user){
         List<List<String>> rows = new ArrayList<>();

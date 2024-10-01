@@ -1,13 +1,10 @@
 package org.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +12,6 @@ import java.util.List;
 public class VoteManager {
     private final DataLoader dataLoader;
     private final List<Survey> surveys;
-    private final ObjectMapper objectMapper;
     private Survey currentSurvey;
     private final MessageManager messageManager;
 
@@ -23,8 +19,6 @@ public class VoteManager {
         this.surveys = new ArrayList<>();
         this.messageManager = messageManager;
         this.dataLoader = dataLoader;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         sendSurveysToAllSubscribers();
     }
     public void answerASurvey(User user, Update update) throws TelegramApiException {
@@ -41,14 +35,14 @@ public class VoteManager {
 
             currentSurvey.getSurveyQuestions().get(questionIndex).addVote(Integer.parseInt(details[2]), user);
             String text = "✅ ההצבעה בוצעה בהצלחה!";
-            messageManager.sendAlert(user,update,text,false);
+            messageManager.sendAlert(update,text,false);
 
         } else if (details.length == 3){
             String text = "🚫️ פג תוקף סקר זה!";
-            messageManager.sendAlert(user,update,text,true);
+            messageManager.sendAlert(update,text,true);
         }else {
             String text = "⛔️ כפתור זה יצא משימוש";
-            messageManager.sendAlert(user,update,text,true);
+            messageManager.sendAlert(update,text,true);
         }
     }
 
@@ -93,8 +87,8 @@ public class VoteManager {
                         userVotersList.remove(currentSurvey.getSurveyCreator());
 
                         if (userVotersList.size() == dataLoader.getUsersAsList().size()-1) {
-                            String text3 = "📊 התקבלו תוצאות עבור הסקר *" + currentSurvey.getName() + "* שפירסמת." ;
-                            text3 = text3 + "⚡️ למעבר מהיר לצפייה בתוצאות הסקר [לחץ כאן!](https://t.me/SurveyDevelopmentBot?start=survey-results:" + currentSurvey.getId()+")";
+                            String text3 = "*📊 התקבלו תוצאות עבור הסקר '" + currentSurvey.getName() + "' שפירסמת.*\n\n" ;
+                            text3 = text3 + "⚡️ למעבר מהיר לצפייה בתוצאות הסקר [לחץ כאן!](https://t.me/SurveyDevelopmentBot?start=SurveyResults_" + currentSurvey.getId()+")";
                             messageManager.sendMessageToUser(currentSurvey.getSurveyCreator(),null,text3,null,true);
                             break;
                         }
@@ -134,6 +128,10 @@ public class VoteManager {
         if (this.currentSurvey != null) {
             for (SendMessage message : currentSurvey.getQuestionsAsMessage()) {
                 message.setChatId(user.getChatId());
+                String text2 = message.getText();
+                String text1 = "📊 *שם הסקר :* " + currentSurvey.getName() + "." + "\n" + "🔗  *ID Survey :* " + currentSurvey.getId() + "." + "\n\n";
+                message.setText(text1 + text2);
+                message.setParseMode("Markdown");
                 messageManager.sendMessage(message);
             }
             int messageID = messageManager.sendMessageToUser(user, "ㅤ", null).getMessageId();

@@ -4,10 +4,12 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class Bot extends TelegramLongPollingBot {
-    BotManager botManager;
+    private BotManager botManager;
+
     public Bot(){
 
     }
+
     public void setBotManager(BotManager botManager){
         this.botManager = botManager;
     }

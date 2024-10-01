@@ -25,34 +25,34 @@ public class SurveyManager {
 
     public void getMessage(User user, Update update) throws TelegramApiException{
         switch (user.getStatus()) {
-            case User.UserStatus.CS_CreateSurvey:
+            case CS_CreateSurvey:
                 handle_CreateSurvey_Status(user,update);
                 break;
-            case User.UserStatus.CS_getName:
+            case CS_getName:
                 handle_getName_Status(user,update);
                 break;
-            case User.UserStatus.CS_ANSWER_GET_QUESTION:
+            case CS_ANSWER_GET_QUESTION:
                 handle_AnswerGetQuestion_Status(user, update);
                 break;
-            case User.UserStatus.CS_ANSWER_GET_OPTIONS:
+            case CS_ANSWER_GET_OPTIONS:
                 handle_AnswerGetOptions_Status(user, update);
                 break;
-            case User.UserStatus.CS_mainMenu:
+            case CS_mainMenu:
                 handle_Menu_Status(user, update);
                 break;
-            case User.UserStatus.CS_SendingTimeDistribution:
+            case CS_SendingTimeDistribution:
                 handle_SendingTimeDistribution_Status(user,update);
                 break;
-            case User.UserStatus.CS_Select_question:
+            case CS_Select_question:
                 handle_SelectQuestion_Status(user,update);
                 break;
-            case User.UserStatus.CS_Edit_question_menu:
-                handle_EditQuestionMenu_Statuse(user,update);
+            case CS_Edit_question_menu:
+                handle_EditQuestionMenu_Status(user,update);
                 break;
-            case User.UserStatus.CS_EditingQuestionItself:
+            case CS_EditingQuestionItself:
                 handle_editingQuestionItself_Status(user,update);
                 break;
-            case User.UserStatus.CS_Editing_answers:
+            case CS_Editing_answers:
                 handle_editingAnswers_Status(user,update);
                 break;
             case CS_surveySettings:
@@ -78,6 +78,9 @@ public class SurveyManager {
                 break;
             case CS_voter:
                 handle_voter_Status(user,update);
+                break;
+            case CS_UserInformation:
+                handle_UserInformation_Status(user,update);
                 break;
         }
     }
@@ -116,38 +119,39 @@ public class SurveyManager {
 
         }
     }
+
     private void handle_CS_SurveySelection_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             if (user.getAnswer().startsWith("NAME")) {
                 user.setStatus(User.UserStatus.CS_ViewingSurvey);
-                String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                String surveyID = user.getAnswer().split(":")[1];
+                Survey survey = user.getSurveyByID(surveyID);
 
-                String text =   "📊 *שם הסקר :* "+ survey.getName() + "." + "\n" + "🔗  *ID Survey :* " + survey.getId() + "." + "\n\n";
-                text = text + "📋 *פרטי הסקר :*";
-                text = text +"\n  ● כמות שאלות : " + survey.getSurveyQuestions().size()+".";
-                text = text +"\n  ● סוג סקר : " + (survey.isAnonymousSurvey() ?   "אנונימי" : "גלוי")+".";
-                text = text +"\n  ● זמן פעילות : " + survey.getDurationOfActivity()+" דקות." + (survey.getDurationOfActivity() == user.getDefaultDurationOfActivity() ?  " (ברירת מחדל)" : "");
-                text = text +"\n  ● תיזמון הסקר : " + (survey.getTimeToAdd() == 0.0 ?  "באופן מיידי!" : survey.getTimeToAdd() + " דקות.") + (survey.getTimeToAdd() == user.getDefaultDistributionTime() ? " (ברירת מחדל)" : "");
-                text = text +"\n  ● סטטוס : " + (survey.isHasResults() ? "הופץ, והתקבלו תוצאות!" : survey.isDistributed() ?  "הופץ!" : survey.isPublished() ?  "פורסם!" : "בשלבי עריכה!" );
+                StringBuilder text = new StringBuilder("📊 *שם הסקר :* " + survey.getName() + "." + "\n" + "🔗  *ID Survey :* " + survey.getId() + "." + "\n\n");
+                text.append("📋 *פרטי הסקר :*");
+                text.append("\n  ● כמות שאלות : ").append(survey.getSurveyQuestions().size()).append(".");
+                text.append("\n  ● סוג סקר : ").append(survey.isAnonymousSurvey() ? "אנונימי" : "גלוי").append(".");
+                text.append("\n  ● זמן פעילות : ").append(survey.getDurationOfActivity()).append(" דקות.").append(survey.getDurationOfActivity() == user.getDefaultDurationOfActivity() ? " (ברירת מחדל)" : "");
+                text.append("\n  ● תיזמון הסקר : ").append(survey.getTimeToAdd() == 0.0 ? "באופן מיידי!" : survey.getTimeToAdd() + " דקות.").append(survey.getTimeToAdd() == user.getDefaultDistributionTime() ? " (ברירת מחדל)" : "");
+                text.append("\n  ● סטטוס : ").append(survey.isHasResults() ? "הופץ, והתקבלו תוצאות!" : survey.isDistributed() ? "הופץ!" : survey.isPublished() ? "פורסם!" : "בשלבי עריכה!");
 
-                text = text +"""
-                
-                
-                ⚠️ במידה ותערוך את הסקר אז הסקר יוסר מתור ההפצה ותצטרך לפרסם אותו מחדש.
-                
-                🗃 תוצאות יתקבלו רק לאחר סיום ההפצה של הסקר בקהילה.
-                """;
+                text.append("""
+                                        
+                                        
+                        ⚠️ במידה ותערוך את הסקר אז הסקר יוסר מתור ההפצה ותצטרך לפרסם אותו מחדש.
+                                        
+                        🗃 תוצאות יתקבלו רק לאחר סיום ההפצה של הסקר בקהילה.
+                        """);
 
-                text = text + "\n🗂 *תוכן הסקר :*";
+                text.append("\n🗂 *תוכן הסקר :*");
                 for (SurveyQuestion question : survey.getSurveyQuestions()){
-                    text = text + "\n\n📄 *השאלה :* " + question.getQuestionText() + "\n📂 *התשובות :*";
+                    text.append("\n\n📄 *השאלה :* ").append(question.getQuestionText()).append("\n📂 *התשובות :*");
                     for (String answer : question.getAnswerOptions()){
-                        text = text + "\n  ● "+ answer;
+                        text.append("\n  ● ").append(answer);
                     }
                 }
                 InlineKeyboardMarkup inlineKeyboardMarkup = getInlineKeyboardMarkupByStatus(user);
-                messageManager.sendMessageToUser(user,update,text,inlineKeyboardMarkup,false);
+                messageManager.sendMessageToUser(user,update, text.toString(),inlineKeyboardMarkup,false);
             }
         }
     }
@@ -155,8 +159,8 @@ public class SurveyManager {
     private void handle_ViewingSurvey_Status(User user, Update update) throws TelegramApiException{
         if (update.hasCallbackQuery()){
             if (user.getAnswer().startsWith("results")){
-                String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                String surveyID = user.getAnswer().split(":")[1];
+                Survey survey = user.getSurveyByID(surveyID);
                 if (survey.isHasResults()) {
                     user.setStatus(User.UserStatus.CS_ViewingResults);
                     String text =   "📊 *שם הסקר :* "+ survey.getName() + "." + "\n" + "🔗  *ID Survey :* " + survey.getId() + "." + "\n\n";
@@ -165,13 +169,12 @@ public class SurveyManager {
                     messageManager.sendMessageToUser(user, update, text, inlineKeyboardMarkup, false);
                 }else {
                     String text = "⏳ עדיין לא התקבלו תוצאות.";
-                    messageManager.sendAlert(user,update,text,true);
+                    messageManager.sendAlert(update,text,true);
                 }
 
-
             }else if (user.getAnswer().startsWith("edited")){
-                String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                String surveyID = user.getAnswer().split(":")[1];
+                Survey survey = user.getSurveyByID(surveyID);
                 if (!survey.isDistributed()) {
                     user.getSurveys().remove(survey);
                     user.getSurveys().add(survey);
@@ -183,31 +186,30 @@ public class SurveyManager {
                     user.setAnswer("Back-Main-Menu");
                     getMessage(user,update);
 
-
                 } else {
                     String text = "🚫 הסקר הופץ, עריכה אינה אפשרית כעת.";
-                    messageManager.sendAlert(user,update,text,true);
+                    messageManager.sendAlert(update,text,true);
                 }
             }else if (user.getAnswer().startsWith("Delete")){
-                String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                String surveyID = user.getAnswer().split(":")[1];
+                Survey survey = user.getSurveyByID(surveyID);
                 if (!survey.isDistributed() || survey.isHasResults()) {
                     user.getSurveys().remove(survey);
                     if (survey.isPublished()){
                         voteManager.removeSurveys(survey);
                     }
                     user.setStatus(User.UserStatus.CS_ViewingSurvey);
+                    user.removeOneToSurveysHeCreated();
                     user.setAnswer("back-surveys");
                     getMessage(user,update);
                     String text = "✅ הסקר נמחק בהצלחה!";
-                    messageManager.sendAlert(user,update,text,false);
+                    messageManager.sendAlert(update,text,false);
 
 
                 } else {
                     String text = "🚫 הסקר הופץ, מחיקה תתאפשר שתהליך ההפצה יגמר.";
-                    messageManager.sendAlert(user,update,text,true);
+                    messageManager.sendAlert(update,text,true);
                 }
-
 
             } else if (user.getAnswer().equals("back-surveys")){
                 if (!user.getSurveys().isEmpty()) {
@@ -229,10 +231,11 @@ public class SurveyManager {
                 }
 
             }
+
         }else if (update.hasMessage() && update.getMessage().hasText()){
             if (user.getAnswer().startsWith("results")){
-                String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                String surveyID = user.getAnswer().split(":")[1];
+                Survey survey = user.getSurveyByID(surveyID);
                 if (survey.isHasResults()) {
                     user.setStatus(User.UserStatus.CS_ViewingResults);
                     String text =   "📊 *שם הסקר :* "+ survey.getName() + "." + "\n" + "🔗  *ID Survey :* " + survey.getId() + "." + "\n\n";
@@ -241,19 +244,17 @@ public class SurveyManager {
                     messageManager.sendMessageToUser(user, update, text, inlineKeyboardMarkup, true);
                 }else {
                     String text = "⏳ עדיין לא התקבלו תוצאות.";
-                    messageManager.sendAlert(user,update,text,true);
+                    messageManager.sendAlert(update,text,true);
                 }
             }
-
         }
     }
-
 
     private void handle_ViewingResults_Status(User user, Update update) throws TelegramApiException{
         if (update.hasCallbackQuery()){
             if (user.getAnswer().startsWith("voting")){
-                String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                String surveyID = user.getAnswer().split(":")[1];
+                Survey survey = user.getSurveyByID(surveyID);
                 if (!survey.isAnonymousSurvey()) {
                     user.setStatus(User.UserStatus.CS_voting);
                     String text =   "📊 *שם הסקר :* "+ survey.getName() + "." + "\n" + "🔗  *ID Survey :* " + survey.getId() + "." + "\n\n";
@@ -262,7 +263,7 @@ public class SurveyManager {
                     messageManager.sendMessageToUser(user, update, text, inlineKeyboardMarkup, false);
                 }else {
                     String text = "🔒 סקר זה אנונימי, ולכן אין גישה לרשימת המצביעים!";
-                    messageManager.sendAlert(user,update,text,true);
+                    messageManager.sendAlert(update,text,true);
                 }
 
             }else if (user.getAnswer().startsWith("back-survey")){
@@ -278,12 +279,12 @@ public class SurveyManager {
         if (update.hasCallbackQuery()){
             if (user.getAnswer().equals("Anonymous-Account")){
                 String text = "🔒 זהו משתמש אנונימי, פרטי המשתמש חסויים!";
-                messageManager.sendAlert(user,update,text,true);
+                messageManager.sendAlert(update,text,true);
             }else if (user.getAnswer().startsWith("voter")){
                 user.setStatus(User.UserStatus.CS_voter);
-                String nameSurvey = user.getAnswer().split(":")[1];
+                String surveyID = user.getAnswer().split(":")[1];
                 String userID = user.getAnswer().split(":")[2];
-                Survey survey = user.getSurveyByName(nameSurvey);
+                Survey survey = user.getSurveyByID(surveyID);
                 User user1 = this.dataLoader.getUsersAsMap().get(userID);
                 String text =   "📊 *שם הסקר :* "+ survey.getName() + "." + "\n" + "🔗  *ID Survey :* " + survey.getId() + "." + "\n\n";
                 text = text + survey.voterInformation(user1);
@@ -298,10 +299,17 @@ public class SurveyManager {
             }
         }
     }
+
     private void handle_voter_Status(User user, Update update) throws TelegramApiException{
         if (update.hasCallbackQuery()){
             if (user.getAnswer().startsWith("information")){
-
+                String id = user.getAnswer().split(":")[2];
+                User user1 = dataLoader.getUsersAsMap().get(id);
+                user.setStatus(User.UserStatus.CS_UserInformation);
+                String text = UserSearchManager.getUserInformation(user1);
+                InlineKeyboardMarkup inlineKeyboardMarkup = getInlineKeyboardMarkupByStatus(user);
+                messageManager.sendMessageToUser(user,update,text,inlineKeyboardMarkup,false);
+                messageManager.sendMessageToUser(user,update,text,inlineKeyboardMarkup,false);
             }else if (user.getAnswer().startsWith("back-voting")){
                 user.setStatus(User.UserStatus.CS_ViewingResults);
                 String name = user.getAnswer().split(":")[1];
@@ -311,9 +319,18 @@ public class SurveyManager {
             }
         }
     }
-
-
-
+    private void handle_UserInformation_Status(User user, Update update) throws TelegramApiException{
+        if (update.hasCallbackQuery()){
+             if (user.getAnswer().startsWith("back-voter")){
+                 user.setStatus(User.UserStatus.CS_voting);
+                String name = user.getAnswer().split(":")[1];
+                String id = user.getAnswer().split(":")[2];
+                String answer = "voter:"+name+":"+id;
+                user.setAnswer(answer);
+                getMessage(user,update);
+            }
+        }
+    }
 
     private void handle_CreateSurvey_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() &&  update.getMessage().hasText()) {
@@ -337,13 +354,13 @@ public class SurveyManager {
 
     private void handle_getName_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() &&  update.getMessage().hasText()) {
-            String name = user.getAnswer();
-            if (user.getSurveyByName(name) != null){
+            String surveyID = user.getAnswer();
+            if (user.getSurveyByID(surveyID) != null){
                 String text = "יש לך כבר סקר בשם הזה! 🔄 נסה שוב.";
                 messageManager.sendMessageToUser(user,update,text,null,true);
                 return;
             }
-            user.createNewSurvey(name);
+            user.createNewSurvey(surveyID);
             user.setStatus(User.UserStatus.CS_ANSWER_GET_QUESTION);
             String text =   "📊 *שם הסקר :* "+ user.getLastSurvey().getName() + "." + "\n" + "🔗  *ID Survey :* " + user.getLastSurvey().getId() + "." + "\n\n";
             text = text + "יופי! 🙌 עכשיו, מה השאלה הראשונה לסקר שלך?";
@@ -352,12 +369,10 @@ public class SurveyManager {
         }
     }
 
-
-
     private void handle_AnswerGetQuestion_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() &&  update.getMessage().hasText()) {
             SurveyQuestion q1 = new SurveyQuestion(user.getAnswer(), user.getLastSurvey().getSurveyQuestions().size());
-            q1.setSurveyId(user.getLastSurvey().getId());
+            q1.setSurvey(user.getLastSurvey());
             for (SurveyQuestion question : user.getLastSurvey().getSurveyQuestions()){
                 if (question.equals(q1)){
                     String text = "קיימת כבר שאלה זהה בסקר! 🔄 נסה שוב!";
@@ -410,7 +425,6 @@ public class SurveyManager {
                 }
             }
         }
-
     }
 
     private void handle_Menu_Status(User user, Update update) throws TelegramApiException {
@@ -437,7 +451,7 @@ public class SurveyManager {
                                 נראה שאין לך שאלות בסקר.
                                 אנא הוסף שאלה אחת לפחות כדי לפרסם! ✏️
                                 """;
-                        messageManager.sendAlert(user,update,text,true);
+                        messageManager.sendAlert(update,text,true);
                     }
 
                 }
@@ -471,6 +485,7 @@ public class SurveyManager {
                     String text =   "📊 *שם הסקר :* "+ user.getLastSurvey().getName() + "." + "\n" + "🔗  *ID Survey :* " + user.getLastSurvey().getId() + "." + "\n\n";
                     text = text + "🗑 הסקר נמחק לצמיתות!";
                     user.getSurveys().removeLast();
+                    user.removeOneToSurveysHeCreated();
                     messageManager.sendMessageToUser(user,update,text,null,false);
                     text = """
                     🔑 לרשימת הפקודות המהירות שלח: /help
@@ -523,7 +538,7 @@ public class SurveyManager {
                 case "New-Status-Survey" ->{
                     user.getLastSurvey().setAnonymousSurvey(!user.getLastSurvey().isAnonymousSurvey());
                     String text = "✅ ברירת מחדל עבור הצבעה בסקר שונתה ל: " + (user.getLastSurvey().isAnonymousSurvey() ? "אנונימית." : "גלויה.");
-                    this.messageManager.sendAlert(user,update,text,false);
+                    this.messageManager.sendAlert(update,text,false);
                     text = """
                 *⚙ תפריט הגדרות הסקר : *
                                 
@@ -554,7 +569,7 @@ public class SurveyManager {
                 case "Reset-survey-settings-by-default" -> {
                     user.getLastSurvey().applyDefaultSettings();
                     String text = "♻️ ההגדרות עודכנו לעריכת ברירת מחדל!";
-                    messageManager.sendAlert(user,update,text,false);
+                    messageManager.sendAlert(update,text,false);
                     text = """
                 *⚙ תפריט הגדרות הסקר : *
                                 
@@ -575,7 +590,6 @@ public class SurveyManager {
         }
     }
 
-
     private void handle_SelectQuestion_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             if (user.getAnswer().startsWith("Select question:")) {
@@ -595,7 +609,7 @@ public class SurveyManager {
         }
     }
 
-    private void handle_EditQuestionMenu_Statuse(User user, Update update) throws TelegramApiException {
+    private void handle_EditQuestionMenu_Status(User user, Update update) throws TelegramApiException {
         if (update.hasCallbackQuery()) {
             switch (user.getAnswer()) {
                 case "delete", "Back menu" -> {
@@ -606,7 +620,7 @@ public class SurveyManager {
                         }
                         user.getLastSurvey().getSurveyQuestions().remove(user.getLastSurvey().getLastEditedQuestion());
                         String text = "🗑 השאלה הוסרה מהסקר!";
-                        this.messageManager.sendAlert(user, update, text, false);
+                        this.messageManager.sendAlert(update, text, false);
                     }
 
                     user.setStatus(User.UserStatus.CS_Select_question);
@@ -675,7 +689,6 @@ public class SurveyManager {
         }
     }
 
-
     private void handle_editingQuestionItself_Status(User user, Update update) throws TelegramApiException {
         if (update.hasMessage() && update.getMessage().hasText()){
             for (SurveyQuestion question : user.getLastSurvey().getSurveyQuestions()){
@@ -700,7 +713,6 @@ public class SurveyManager {
                 messageManager.sendMessage(EMessage);
             }
         }
-
     }
 
     private Double getNumberFromUser(User user) throws TelegramApiException {
@@ -725,7 +737,6 @@ public class SurveyManager {
             return null;
         }
         return timeToSend;
-
     }
 
     private void handle_SendingDurationOfActivity_Status(User user, Update update) throws TelegramApiException {
@@ -828,6 +839,7 @@ public class SurveyManager {
             return EMessage;
         }
     }
+
     private InlineKeyboardMarkup getInlineKeyboardMarkupByStatus(User user){
         List<List<String[]>> rows = new ArrayList<>();
         switch (user.getStatus()) {
@@ -879,7 +891,7 @@ public class SurveyManager {
                 return MessageManager.createsFloatingButtons(rows);
             case CS_SurveySelection:
                 for (Survey survey : user.getSurveys()){
-                    MessageManager.addFButtonToNewRow(rows, survey.getName(), "NAME:"+survey.getName());
+                    MessageManager.addFButtonToNewRow(rows, survey.getName(), "NAME:"+survey.getId());
                 }
                 return MessageManager.createsFloatingButtons(rows);
             case CS_ViewingSurvey:
@@ -894,7 +906,7 @@ public class SurveyManager {
                 return MessageManager.createsFloatingButtons(rows);
             case CS_voting:
                 String name = user.getAnswer().split(":")[1];
-                Survey survey = user.getSurveyByName(name);
+                Survey survey = user.getSurveyByID(name);
                 for (User user1 : survey.getAllVoting()){
                     String text = user1.isAnonymousAccount() ?  "אנונימי" : user1.getDetails().getFirstName() +  (user1.getDetails().getLastName() == null ? "" : user1.getDetails().getLastName());
                     MessageManager.addFButtonToNewRow(rows, text,user1.isAnonymousAccount() ? "Anonymous-Account" : "voter:"+name+":"+user1.getChatId());
@@ -902,7 +914,11 @@ public class SurveyManager {
                 MessageManager.addFButtonToNewRow(rows, "⬅️ חזור", "back-survey-results:"+name);
                 return MessageManager.createsFloatingButtons(rows);
             case CS_voter:
+                MessageManager.addFButtonToNewRow(rows, "👤 מידע על המשתמש 👤", "information:"+user.getAnswer().split(":")[1]+":"+user.getAnswer().split(":")[2]);
                 MessageManager.addFButtonToNewRow(rows, "⬅️ חזור", "back-voting:"+user.getAnswer().split(":")[1]+":"+user.getAnswer().split(":")[2]);
+                return MessageManager.createsFloatingButtons(rows);
+            case CS_UserInformation:
+                MessageManager.addFButtonToNewRow(rows, "⬅️ חזור", "back-voter:"+user.getAnswer().split(":")[1]+":"+user.getAnswer().split(":")[2]);
                 return MessageManager.createsFloatingButtons(rows);
             default:
                 return null;

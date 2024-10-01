@@ -1,8 +1,6 @@
 package org.example;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -10,35 +8,71 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SurveyQuestion {
-    private String questionText;
-
-    private int questionNumber;
 
     private List<String> answerOptions;
 
-    @JsonIgnore
-    private SendMessage message;
-
-    private int surveyId;
-
-    @JsonIgnore
-    private int lastAnswerAdded;
-    @JsonIgnore
-
     private Map<Integer,List<User>> votes = new HashMap<>();
+
+    private String questionText;
+
+    private int questionNumber;
+    private Survey survey;
+    private int lastAnswerAdded;
 
     public SurveyQuestion(String questionText,int questionNumber){
         this.questionText = questionText;
         this.answerOptions = new ArrayList<>();
         this.questionNumber = questionNumber;
     }
+
+    public String getQuestionText(){
+        return questionText;
+    }
+
+    public void setQuestionNumber(int newNum){
+        this.questionNumber = newNum;
+    }
+
+    public int getQuestionNumber(){
+        return questionNumber;
+    }
+
+    public void setQuestionText(String newT){
+        this.questionText = newT;
+    }
+
+    public int getLastAnswerAdded(){
+        return lastAnswerAdded;
+    }
+
+    public void setLastAnswerAdded(int newLast){
+        this.lastAnswerAdded = newLast;
+    }
+
+    public List<String> getAnswerOptions(){
+        return answerOptions;
+    }
+
+    public int getSumOfAnswer(){
+        return answerOptions.size();
+    }
+
+    public void setSurvey(Survey newS){
+        this.survey = newS;
+    }
+
+    public String getSurveyID(){
+        return survey.getId()+"";
+    }
+
+
     public void addAnswer(String answer){
         answerOptions.add(answer);
         List<User> users = new ArrayList<>();
         this.votes.put(votes.size(), users);
     }
-    public void removeAnswerByIndex(int removedIndex) {
 
+    public void removeAnswerByIndex(int removedIndex) {
         this.answerOptions.remove(removedIndex);
         this.votes.remove(removedIndex);
 
@@ -59,18 +93,13 @@ public class SurveyQuestion {
         this.votes = updatedVotes;
     }
 
-
-    public void setSurveyId(int newS){
-        this.surveyId = newS;
-    }
-
     public SendMessage getMessage() {
-        this.message = createMessage();
-        return this.message;
+        return createMessage();
     }
+
     private SendMessage createMessage(){
         SendMessage message = new SendMessage();
-        message.setText(questionText);
+        message.setText( "📄 *השאלה :*" + questionText + " (" + (questionNumber+1)+"/"+survey.getSurveyQuestions().size()+")" + "\n*📝 התשובות : *");
 
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
@@ -78,7 +107,7 @@ public class SurveyQuestion {
             List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setText(answerOptions.get(i));
-            button.setCallbackData(surveyId+":"+questionNumber+":"+i);
+            button.setCallbackData(getSurveyID()+":"+questionNumber+":"+i);
             keyboardButtonsRow1.add(button);
             rowList.add(keyboardButtonsRow1);
         }
@@ -86,11 +115,10 @@ public class SurveyQuestion {
         message.setReplyMarkup(inlineKeyboardMarkup);
         return message;
     }
+
     public void addVote(int numAnswer,User user){
         if (votes.containsKey(numAnswer)){
-            if (votes.get(numAnswer).contains(user)){
-                return;
-            }else {
+            if (!votes.get(numAnswer).contains(user)){
                 votes.get(numAnswer).add(user);
                 for (int i = 0; i < votes.size(); i++){
                     if (i != numAnswer){
@@ -100,17 +128,13 @@ public class SurveyQuestion {
             }
         }
     }
+
     public void removeVote(int numAnswer,User user){
         if (votes.containsKey(numAnswer)){
-            if (!votes.get(numAnswer).contains(user)){
-                return;
-            }else {
-                votes.get(numAnswer).remove(user);
-            }
+            votes.get(numAnswer).remove(user);
         }
     }
 
-    @JsonIgnore
     public String getResults() {
         Map<String, Integer> answerVotesMap = new LinkedHashMap<>();
         for (int i = 0; i < answerOptions.size(); i++) {
@@ -140,35 +164,6 @@ public class SurveyQuestion {
 
         return results.toString();
     }
-    public String getQuestionText(){
-        return questionText;
-    }
-
-    public void setQuestionNumber(int newNum){
-        this.questionNumber = newNum;
-    }
-    public int getQuestionNumber(){
-        return questionNumber;
-    }
-    public void setQuestionText(String newT){
-        this.questionText = newT;
-    }
-    public int getLastAnswerAdded(){
-        return lastAnswerAdded;
-    }
-    public void setLastAnswerAdded(int newLast){
-        this.lastAnswerAdded = newLast;
-    }
-    public List<String> getAnswerOptions(){
-        return answerOptions;
-    }
-
-    public String toString(){
-        return questionText + " - " + answerOptions;
-    }
-    public int getSumOfAnswer(){
-        return answerOptions.size();
-    }
 
     public List<User> getUsers() {
         return votes.values()
@@ -178,7 +173,6 @@ public class SurveyQuestion {
                 .collect(Collectors.toList());
     }
 
-    @JsonIgnore
     public String getQuestionAndAnswerAsText(){
         String t = "💢 השאלה שנבחרה : \n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n" +  "📄 *השאלה* : \n➖ " + questionText  +"\n📂 *תשובות* :\n";
         StringBuilder results = new StringBuilder(t);
@@ -186,10 +180,6 @@ public class SurveyQuestion {
             results.append("➖ ").append(answer).append("\n");
         }
         return results.toString();
-    }
-
-    public Map<Integer, List<User>> getVotes() {
-        return votes;
     }
 
     public String voterInformation(User user){
@@ -213,11 +203,16 @@ public class SurveyQuestion {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         SurveyQuestion question = (SurveyQuestion) object;
-        return surveyId == question.surveyId &&  Objects.equals(questionText, question.questionText);
+        return Objects.equals(getSurveyID(),question.getSurveyID()) &&  Objects.equals(questionText, question.questionText);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(questionText, surveyId);
+        return Objects.hash(questionText, getSurveyID());
     }
+
+    public String toString(){
+        return questionText + " - " + answerOptions;
+    }
+
 }
