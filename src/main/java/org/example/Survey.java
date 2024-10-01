@@ -170,7 +170,7 @@ public class Survey {
 
                 """);
         text.append("*🗣 שם :* ").append(user.getFullName());
-        text.append("\n").append("🔗 *ID* : [").append(user.getChatId()).append("](tg://user?id=").append(user.getChatId()).append(")");
+        text.append("\n").append("🆔 *ID* : [").append(user.getChatId()).append("](tg://user?id=").append(user.getChatId()).append(")");
 
         for (SurveyQuestion surveyQuestion : surveyQuestions){
             text.append("\n\n").append(surveyQuestion.voterInformation(user));

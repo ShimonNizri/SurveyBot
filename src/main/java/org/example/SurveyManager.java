@@ -242,6 +242,8 @@ public class SurveyManager {
                     text = text + survey.getResultsAsMessage().getText();
                     InlineKeyboardMarkup inlineKeyboardMarkup = getInlineKeyboardMarkupByStatus(user);
                     messageManager.sendMessageToUser(user, update, text, inlineKeyboardMarkup, true);
+                    int messageID = messageManager.sendMessageToUser(user, "ㅤ", null).getMessageId();
+                    messageManager.deleteMessage(user, messageID);
                 }else {
                     String text = "⏳ עדיין לא התקבלו תוצאות.";
                     messageManager.sendAlert(update,text,true);

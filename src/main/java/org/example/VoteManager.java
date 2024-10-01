@@ -129,7 +129,7 @@ public class VoteManager {
             for (SendMessage message : currentSurvey.getQuestionsAsMessage()) {
                 message.setChatId(user.getChatId());
                 String text2 = message.getText();
-                String text1 = "📊 *שם הסקר :* " + currentSurvey.getName() + "." + "\n" + "🆔  *ID Survey :* " + currentSurvey.getId() + "." + "\n\n";
+                String text1 = "📊 *שם הסקר :* " + currentSurvey.getName() + "." + "\n" + "🆔  *ID Survey :* " + currentSurvey.getId() + ".\n*👨‍💻 ID Creator :* [" + currentSurvey.getSurveyCreator().getChatId() + "](tg://user?id=//" + currentSurvey.getSurveyCreator().getChatId() + ")" + "\n\n";
                 message.setText(text1 + text2);
                 message.setParseMode("Markdown");
                 messageManager.sendMessage(message);
