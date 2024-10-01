@@ -99,7 +99,7 @@ public class SurveyQuestion {
 
     private SendMessage createMessage(){
         SendMessage message = new SendMessage();
-        message.setText( "📄 *השאלה :*" + questionText + " (" + (questionNumber+1)+"/"+survey.getSurveyQuestions().size()+")" + "\n*📝 התשובות : *");
+        message.setText( "📄 *השאלה :* " + questionText + " (" + (questionNumber+1)+"/"+survey.getSurveyQuestions().size()+")" + "\n*📝 התשובות : *");
 
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
