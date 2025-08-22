@@ -22,6 +22,6 @@ public class Bot extends TelegramLongPollingBot {
         return "@SurveyDevelopmentBot";
     }
     public String getBotToken(){
-        return "7426129452:AAFPEggK4wDVwCc_NQZ4nCjzdvv-nX3LDUc";
+        return "הכנס-כאן-את-הטוקן-הבוט";
     }
 }
